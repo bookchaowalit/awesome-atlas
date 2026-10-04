@@ -1,0 +1,66 @@
+{
+  "schema": "awesome.railway-deployment.v1",
+  "observed_at": "2026-10-04T18:16:00Z",
+  "state": "prepared_for_first_deploy",
+  "project": {"name": "awesome-atlas", "id": "47722b43-7984-4876-801c-8683b55d02ea"},
+  "environment": {"name": "production", "id": "307a7c33-d848-42a7-8eaa-2fe041d397a2"},
+  "region": "asia-southeast1-eqsg3a",
+  "source": {"repo": "bookchaowalit/awesome-atlas", "branch": "main", "connected": false, "prepared_commit": null},
+  "services": {
+    "awesome-api": {
+      "id": "b6a7e7c0-d82e-47a2-ad7e-4973fec7e545",
+      "dockerfile": "services/awesome-api/Dockerfile",
+      "watch_patterns": ["/services/awesome-api/awesome_api/**", "/services/awesome-api/Dockerfile", "/services/awesome-api/Dockerfile.dockerignore", "/services/awesome-api/docker-entrypoint.py", "/services/awesome-api/requirements.txt"],
+      "port": 3510,
+      "healthcheck": "/health",
+      "sleep_application": false,
+      "replicas": 1,
+      "limits": {"memory_gb": 0.5, "vcpus": 1},
+      "restart_policy": {"type": "ON_FAILURE", "max_retries": 10},
+      "variables": {
+        "PORT": "3510",
+        "AWESOME_API_RUNTIME_DIR": "/data",
+        "AWESOME_API_SYNC_ENABLED": "true",
+        "AWESOME_API_SYNC_INTERVAL_SECONDS": "1800",
+        "AWESOME_API_MAX_SOURCES": "16"
+      },
+      "volume": {"id": "34d1bd75-e329-4f86-97f5-84844bf6b5f6", "name": "awesome-data", "mount_path": "/data", "size_mb": 5000},
+      "public_domain": null,
+      "deployment_id": null,
+      "deployment_status": null
+    },
+    "awesome-web": {
+      "id": "5742c016-adae-4d19-af7a-9d8416ee5f24",
+      "dockerfile": "apps/awesome-web/Dockerfile",
+      "watch_patterns": ["/apps/awesome-web/src/**", "/apps/awesome-web/public/**", "/apps/awesome-web/package*.json", "/apps/awesome-web/tsconfig*.json", "/apps/awesome-web/vite.config.ts", "/apps/awesome-web/index.html", "/apps/awesome-web/Dockerfile", "/apps/awesome-web/Dockerfile.dockerignore", "/apps/awesome-web/Caddyfile"],
+      "port": 3500,
+      "healthcheck": "/health",
+      "sleep_application": false,
+      "replicas": 1,
+      "limits": {"memory_gb": 0.25, "vcpus": 0.5},
+      "restart_policy": {"type": "ON_FAILURE", "max_retries": 10},
+      "variables": {"PORT": "3500", "AWESOME_API_ORIGIN": "http://awesome-api.railway.internal:3510"},
+      "public_domain": "awesome-web-production.up.railway.app",
+      "deployment_id": null,
+      "deployment_status": null
+    }
+  },
+  "verification": {
+    "github_account_link": {"status": "confirmed", "login": "bookchaowalit", "github_user_id": 57591548, "railway_provider_id": "github-57591548"},
+    "railway_connector_identity": "matches_cli_account",
+    "backend_tests": {"status": "passed", "count": 57},
+    "frontend_tests": {"status": "passed", "count": 8},
+    "frontend_build": "passed",
+    "entrypoint_checks": "passed",
+    "scoped_review": "approved",
+    "root_test": "passed",
+    "root_typecheck": "passed",
+    "root_docs": "blocked_by_existing_missing_book_audio_production_checkout",
+    "container_build": "not_started",
+    "live_http": "not_available",
+    "volume_persistence_after_restart": "not_verified"
+  },
+  "blockers": [
+    {"action": "connect_service_source", "reason": "New standalone repository source connection pending"}
+  ]
+}

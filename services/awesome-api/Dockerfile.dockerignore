@@ -1,0 +1,6 @@
+# Dockerfile-specific allowlist for the documented repository-root build context.
+# Only this service's build inputs are sent to the builder.
+**
+!services/awesome-api/requirements.txt
+!services/awesome-api/awesome_api/*.py
+!services/awesome-api/docker-entrypoint.py

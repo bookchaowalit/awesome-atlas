@@ -1,0 +1,16 @@
+schema: solo-empire.service.v1
+name: awesome-api
+owner_module: awesome
+port: 3510
+env_prefix: AWESOME_API_
+contract: contracts/awesome.v1.md
+health: /health
+dependencies: []
+data:
+  owner: awesome
+  reads: []
+  writes: [.runtime]
+secrets: []
+deploy:
+  target: railway
+  image: Dockerfile

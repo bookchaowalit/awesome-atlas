@@ -1,0 +1,15 @@
+# Dockerfile-specific allowlist for the repository-root build context.
+**
+!apps/awesome-web/package.json
+!apps/awesome-web/package-lock.json
+!apps/awesome-web/index.html
+!apps/awesome-web/tsconfig.json
+!apps/awesome-web/vite.config.ts
+!apps/awesome-web/playwright.config.ts
+!apps/awesome-web/Caddyfile
+!apps/awesome-web/src/
+!apps/awesome-web/src/**
+!apps/awesome-web/public/
+!apps/awesome-web/public/**
+!apps/awesome-web/tests/
+!apps/awesome-web/tests/**
