@@ -131,7 +131,10 @@ API มี persistent volume ที่ `/data`, หนึ่ง process/หน�
 health check `/health`, restart เมื่อ failure และปิด app sleeping
 เมื่อ deployment ผ่าน health check จะทำงานและซิงก์ข้อมูลได้แม้ปิดเครื่องพัฒนา
 source คือ repo `bookchaowalit/awesome-atlas` ที่มีเฉพาะเว็บและ backend
-ขณะนี้สร้าง resources แล้วและรอเชื่อม source; ตรวจสถานะจริงจาก deployment record
+เว็บและ API deploy สำเร็จแล้ว: [Awesome Atlas](https://awesome-web-production.up.railway.app)
+ตรวจ HTTPS, API, หมวดย่อย, เปรียบเทียบรายการซ้ำและข้อมูลอันดับรายวันผ่านแล้ว
+ข้อมูลยังทยอยซิงก์และบางลิสต์ไม่มี repository links ที่ parser รองรับ;
+ใช้ API status และ deployment record เพื่อตรวจความครอบคลุมและข้อจำกัดจริง
 
 การตั้งค่าและหลักฐาน deployment อยู่ใน [คู่มือดูแลระบบ](deployment/README.md)
 และ [deployment record](deployment/railway-state.json)

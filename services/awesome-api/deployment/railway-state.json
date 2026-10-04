@@ -1,11 +1,11 @@
 {
   "schema": "awesome.railway-deployment.v1",
-  "observed_at": "2026-10-04T18:15:03Z",
-  "state": "blocked_before_first_deploy",
+  "observed_at": "2026-10-04T18:44:42Z",
+  "state": "online",
   "project": {"name": "awesome-atlas", "id": "47722b43-7984-4876-801c-8683b55d02ea"},
   "environment": {"name": "production", "id": "307a7c33-d848-42a7-8eaa-2fe041d397a2"},
   "region": "asia-southeast1-eqsg3a",
-  "source": {"repo": "bookchaowalit/awesome-atlas", "branch": "main", "connected": false, "prepared_commit": "c723ca85922ded0436d3b3f6741f4b9d9ff67922"},
+  "source": {"repo": "bookchaowalit/awesome-atlas", "branch": "main", "connected": true, "deployed_commit": "34d71d036d878885e3496f1dfedab007223f0223"},
   "services": {
     "awesome-api": {
       "id": "b6a7e7c0-d82e-47a2-ad7e-4973fec7e545",
@@ -26,8 +26,8 @@
       },
       "volume": {"id": "34d1bd75-e329-4f86-97f5-84844bf6b5f6", "name": "awesome-data", "mount_path": "/data", "size_mb": 5000},
       "public_domain": null,
-      "deployment_id": null,
-      "deployment_status": null
+      "deployment_id": "f24e271b-a96b-418b-a4ba-f9e99ab7658e",
+      "deployment_status": "SUCCESS"
     },
     "awesome-web": {
       "id": "5742c016-adae-4d19-af7a-9d8416ee5f24",
@@ -41,8 +41,8 @@
       "restart_policy": {"type": "ON_FAILURE", "max_retries": 10},
       "variables": {"PORT": "3500", "AWESOME_API_ORIGIN": "http://awesome-api.railway.internal:3510"},
       "public_domain": "awesome-web-production.up.railway.app",
-      "deployment_id": null,
-      "deployment_status": null
+      "deployment_id": "843c4cd2-8f13-41ab-be66-a773939d061e",
+      "deployment_status": "SUCCESS"
     }
   },
   "verification": {
@@ -55,15 +55,34 @@
     "frontend_build": "passed",
     "entrypoint_checks": "passed",
     "scoped_review": "approved",
-    "root_test": "passed",
-    "root_typecheck": "passed",
-    "root_docs": "blocked_by_existing_missing_book_audio_production_checkout",
-    "container_build": "not_started",
-    "live_http": "not_available",
+    "container_build": "passed_both_services",
+    "live_http": "passed",
+    "hosted_browser": "passed_targeted_flows_via_firecrawl",
+    "hosted_ui_checks_passed": ["thai_rendering", "search", "category_filter", "bookmark_reload", "list_sections_and_deep_link", "nested_list_pending_state", "comparison_and_filter_counts", "mentions_ranking", "daily_rankings", "desktop_mobile_overflow", "mobile_keyboard_focus", "dark_theme"],
+    "browser_console": "no_errors_observed",
+    "volume_mount": "confirmed_from_platform_config_and_startup_logs",
+    "runtime_uid": "not_verified_no_registered_ssh_keys",
     "volume_persistence_after_restart": "not_verified"
   },
-  "blockers": [
-    {"action": "connect_service_source", "reason": "User does not have access to the repo", "diagnosis": "GitHub account link is confirmed. Source attachment to the new standalone repository is still rejected; no build has started.", "required_action": "Grant the Railway GitHub App access to bookchaowalit/awesome-atlas, then retry connecting the existing services. Do not change repository visibility or grant unrelated repositories."},
-    {"action": "railway_cli_upload", "reason": "PreToolUse hook: production-capable deployment requires explicit human approval", "command_executed": false}
+  "live_snapshot": {
+    "state": "degraded",
+    "last_synced_at": "2026-10-04T18:22:47.765377+00:00",
+    "next_sync_at": "2026-10-04T18:52:47.770623+00:00",
+    "projects": 1334, "lists": 679, "categories": 27, "sources_synced": 12, "sources_total": 679,
+    "unsupported_sources": ["allthingssmitty/css-protips", "allthingssmitty/jquery-tips-everyone-should-know", "allthingssmitty/must-watch-css", "arslanbilal/git-cheat-sheet"],
+    "daily": {"latest_date_utc": "2026-10-04", "snapshot_dates": 7, "items": 19, "error": null}
+  },
+  "http_smoke": {
+    "origin": "https://awesome-web-production.up.railway.app",
+    "checks_passed": ["web_health", "api_status", "projects", "categories", "sources", "source_details", "mentions_ranking", "compare_all", "compare_shared", "daily_sources", "daily_snapshot", "api_404_is_json", "spa_fallback", "hashed_asset_immutable_cache"],
+    "source_detail": {"id": "adrientorris/awesome-blazor", "items": 250, "sections": 37},
+    "comparison": {"left": "agarrharr/awesome-cli-apps", "right": "alebcay/awesome-shell", "shared": 79, "union": 752},
+    "ranked_duplicates": 77
+  },
+  "blockers": [],
+  "verification_limitations": [
+    "Browser checks used Firecrawl; screenshot pixels and full browser network logs were not reviewed. Positive-overlap UI and daily-only bookmark UI were not covered; API overlap was checked separately.",
+    "Railway SSH has no registered keys; runtime process UID and volume files were not inspected.",
+    "Volume persistence across a service restart has not been tested."
   ]
 }

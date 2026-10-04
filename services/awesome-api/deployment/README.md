@@ -6,15 +6,13 @@ source ที่เตรียมคือ `bookchaowalit/awesome-atlas`, branc
 repository root โดย Dockerfile-specific allowlists ไม่รวมไฟล์ส่วนอื่น
 resource IDs และผลตรวจอยู่ใน [railway-state.json](railway-state.json)
 
-สถานะปัจจุบัน: สร้างโปรเจกต์ สอง services, public web domain และ API volume แล้ว
-แต่ยังไม่มี deployment ที่รันจริง repo นี้แยกเฉพาะเว็บและ backend จาก repo เดิม
-ยืนยันว่า Railway เชื่อม GitHub `bookchaowalit` ถูกบัญชีแล้ว แต่การเชื่อม source
-ของ repo ใหม่นี้ยังตอบ `User does not have access to the repo` และยังไม่มี build
-ให้เพิ่ม `awesome-atlas` ใน [สิทธิ์ Railway GitHub App](https://github.com/apps/railway-app/installations/new)
-แล้วเชื่อมกับสอง services ที่เตรียมไว้ หากยังไม่พบ repo ให้ refresh รายการก่อนตรวจ
-ปัญหา authorization ต่อ ไม่เปลี่ยน visibility หรือให้สิทธิ์ repo อื่น
-Lifecycle hook ปฏิเสธการอัปโหลดผ่าน CLI ในครั้งก่อน
-ไม่ถือว่าการสร้าง domain ยืนยันว่าเว็บออนไลน์แล้ว
+สถานะปัจจุบัน: [เว็บออนไลน์](https://awesome-web-production.up.railway.app) แล้ว
+ทั้งสอง services build และ deploy `SUCCESS` จาก commit `34d71d0`
+ตรวจ HTTPS, health, API projects/sources/categories, หมวดย่อย, comparison,
+mentions ranking และ daily archive ผ่าน origin เดียวกันแล้ว
+รอบแรกอ่านสำเร็จ 12 จาก 679 ลิสต์และมี daily snapshots 7 วัน UTC;
+API data state เป็น `degraded` เพราะ 4 ลิสต์ไม่มี GitHub repository links ที่ parser รองรับ
+ข้อมูลลิสต์อื่นยังทยอยดึงทุก 30 นาที สถานะนี้แยกจาก Railway services ที่ออนไลน์
 
 | Service | Dockerfile | Port | Health | Storage |
 |---|---|---|---|---|
@@ -60,7 +58,7 @@ Bronze Parquet และ committed manifests การ redeploy/restart ใช�
 
 หลังเชื่อม GitHub source แล้ว การ push `main` ที่เปลี่ยน runtime/build inputs
 ของแต่ละ service จะทำให้ Railway build เฉพาะ service นั้น การแก้เอกสารอย่างเดียว
-ไม่ควรทำให้ API หยุดเพื่อ redeploy ขณะนี้ source connection ยังไม่สำเร็จ
+ไม่ควรทำให้ API หยุดเพื่อ redeploy ขณะนี้ source เชื่อมกับ branch `main` แล้ว
 Railway volume deployments มีช่วงหยุดสั้น ๆ เพื่อให้ writer ใช้ volume เพียงตัวเดียว
 rollback ใช้ deployment image ที่ผ่านการตรวจใน service เดิมและคง volume เดิมไว้
 หลัง rollback ต้องตรวจ API status และ compatibility ของ projection/lake ก่อนรับรองผล

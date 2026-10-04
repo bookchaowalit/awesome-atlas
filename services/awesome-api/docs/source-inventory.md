@@ -18,7 +18,7 @@ description: ที่มา สิทธิ์การอ่าน ขอบ�
 | Inventory ID/version | awesome-sources.v1 |
 | Steward/owner | โมดูล awesome / awesome-api |
 | Scope/domain | public GitHub repositories และ daily trending rankings |
-| Status/review date | เตรียม hosted pilot บน Railway; รอสิทธิ์ source repository; 2026-10-05 |
+| Status/review date | hosted pilot ออนไลน์บน Railway; coverage และ source errors แสดงใน API; 2026-10-05 |
 | Catalog/evidence path | API sources, daily sources และ immutable capture manifests |
 
 ## Sources

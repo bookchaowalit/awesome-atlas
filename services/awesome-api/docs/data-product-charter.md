@@ -19,7 +19,7 @@ description: ขอบเขตข้อมูล Awesome lists และอั�
 | Product owner | Awesome Atlas / bookchaowalit |
 | Data owner/steward | awesome-api; ไม่เขียนฐานข้อมูลของ service อื่น |
 | Producer team | worker ใน awesome-api |
-| Status/review date | เตรียม hosted pilot บน Railway; ยังไม่มี deployment ที่รันจริง; 2026-10-05 |
+| Status/review date | hosted pilot ออนไลน์บน Railway; ยังทยอยซิงก์ลิสต์; 2026-10-05 |
 | Evidence boundary | service tests, service lake, API contract และ [deployment record](../deployment/railway-state.json) |
 
 ## Product contract
@@ -55,5 +55,6 @@ description: ขอบเขตข้อมูล Awesome lists และอั�
 | Consumer representative | awesome-web | ตรวจการใช้ contract ผ่าน browser tests |
 
 Deployment target คือ Railway; ผลออนไลน์และ resource IDs อยู่ใน deployment record
-volume รักษา lake/projection ข้าม restart แต่ยังต้องติดตามพื้นที่และกำหนด
+ตั้ง volume สำหรับ lake/projection ข้าม restart แล้ว แต่ยังไม่ได้ทดสอบหยุด/เริ่มบริการจริง
+ต้องติดตามพื้นที่และกำหนด
 retention/backup เพิ่ม การ deploy ไม่เปลี่ยนเงื่อนไขการอ่านต้นทางหรือสิทธิ์ของข้อมูล

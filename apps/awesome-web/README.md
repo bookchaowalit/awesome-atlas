@@ -75,6 +75,8 @@ npm run test:browser
 
 ## Railway
 
+เว็บออนไลน์: [Awesome Atlas](https://awesome-web-production.up.railway.app)
+
 Production ใช้ Dockerfile ของเว็บ build `dist/` แล้วเสิร์ฟด้วย Caddy แยกจาก
 `awesome-api` ในโปรเจกต์ Railway `awesome-atlas` โฮสต์อยู่สิงคโปร์
 เว็บ proxy `/api/*` ไปยัง `http://awesome-api.railway.internal:3510` ขณะรัน

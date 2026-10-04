@@ -47,6 +47,8 @@ cd services/awesome-api
 
 ## Railway
 
+เว็บออนไลน์: [Awesome Atlas](https://awesome-web-production.up.railway.app)
+
 ใช้สอง services ในโปรเจกต์ `awesome-atlas` โดย build จาก repository root:
 
 | Service | Dockerfile | Port | Health |
