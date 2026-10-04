@@ -8,8 +8,13 @@ resource IDs และผลตรวจอยู่ใน [railway-state.json](
 
 สถานะปัจจุบัน: สร้างโปรเจกต์ สอง services, public web domain และ API volume แล้ว
 แต่ยังไม่มี deployment ที่รันจริง repo นี้แยกเฉพาะเว็บและ backend จาก repo เดิม
-ยืนยันว่า Railway เชื่อม GitHub `bookchaowalit` ถูกบัญชีแล้ว ขั้นถัดไปคือเชื่อม
-repo นี้กับสอง services ที่เตรียมไว้ ไม่ถือว่าการสร้าง domain ยืนยันว่าเว็บออนไลน์แล้ว
+ยืนยันว่า Railway เชื่อม GitHub `bookchaowalit` ถูกบัญชีแล้ว แต่การเชื่อม source
+ของ repo ใหม่นี้ยังตอบ `User does not have access to the repo` และยังไม่มี build
+ให้เพิ่ม `awesome-atlas` ใน [สิทธิ์ Railway GitHub App](https://github.com/apps/railway-app/installations/new)
+แล้วเชื่อมกับสอง services ที่เตรียมไว้ หากยังไม่พบ repo ให้ refresh รายการก่อนตรวจ
+ปัญหา authorization ต่อ ไม่เปลี่ยน visibility หรือให้สิทธิ์ repo อื่น
+Lifecycle hook ปฏิเสธการอัปโหลดผ่าน CLI ในครั้งก่อน
+ไม่ถือว่าการสร้าง domain ยืนยันว่าเว็บออนไลน์แล้ว
 
 | Service | Dockerfile | Port | Health | Storage |
 |---|---|---|---|---|

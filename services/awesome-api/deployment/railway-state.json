@@ -1,11 +1,11 @@
 {
   "schema": "awesome.railway-deployment.v1",
-  "observed_at": "2026-10-04T18:16:00Z",
-  "state": "prepared_for_first_deploy",
+  "observed_at": "2026-10-04T18:15:03Z",
+  "state": "blocked_before_first_deploy",
   "project": {"name": "awesome-atlas", "id": "47722b43-7984-4876-801c-8683b55d02ea"},
   "environment": {"name": "production", "id": "307a7c33-d848-42a7-8eaa-2fe041d397a2"},
   "region": "asia-southeast1-eqsg3a",
-  "source": {"repo": "bookchaowalit/awesome-atlas", "branch": "main", "connected": false, "prepared_commit": null},
+  "source": {"repo": "bookchaowalit/awesome-atlas", "branch": "main", "connected": false, "prepared_commit": "c723ca85922ded0436d3b3f6741f4b9d9ff67922"},
   "services": {
     "awesome-api": {
       "id": "b6a7e7c0-d82e-47a2-ad7e-4973fec7e545",
@@ -48,6 +48,8 @@
   "verification": {
     "github_account_link": {"status": "confirmed", "login": "bookchaowalit", "github_user_id": 57591548, "railway_provider_id": "github-57591548"},
     "railway_connector_identity": "matches_cli_account",
+    "repository_created_and_pushed": "passed",
+    "verification_repository": "bookchaowalit/awesome-atlas",
     "backend_tests": {"status": "passed", "count": 57},
     "frontend_tests": {"status": "passed", "count": 8},
     "frontend_build": "passed",
@@ -61,6 +63,7 @@
     "volume_persistence_after_restart": "not_verified"
   },
   "blockers": [
-    {"action": "connect_service_source", "reason": "New standalone repository source connection pending"}
+    {"action": "connect_service_source", "reason": "User does not have access to the repo", "diagnosis": "GitHub account link is confirmed. Source attachment to the new standalone repository is still rejected; no build has started.", "required_action": "Grant the Railway GitHub App access to bookchaowalit/awesome-atlas, then retry connecting the existing services. Do not change repository visibility or grant unrelated repositories."},
+    {"action": "railway_cli_upload", "reason": "PreToolUse hook: production-capable deployment requires explicit human approval", "command_executed": false}
   ]
 }
