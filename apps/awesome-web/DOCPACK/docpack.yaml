@@ -1,0 +1,8 @@
+system_id: awesome-web
+prefix: AWE
+brand: "AWESOME ATLAS"
+subtitle: "เว็บค้นพบโอเพนซอร์สจาก GitHub Awesome lists ผ่าน awesome-api"
+footer: "Awesome Atlas — ฉบับร่างเพื่อพิจารณา"
+color: "#7050b5"
+audience: internal
+tier: L1
