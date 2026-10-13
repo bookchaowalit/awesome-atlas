@@ -9,7 +9,7 @@ description: ขอบเขตข้อมูล Awesome lists และอั�
 
 # Data Product Charter
 
-ขอบเขตข้อมูลสำหรับ repository `bookchaowalit/awesome-atlas`
+ขอบเขตข้อมูลสำหรับ repository `bookchaowalit/devtools-awesome-atlas`
 
 ## Document control
 

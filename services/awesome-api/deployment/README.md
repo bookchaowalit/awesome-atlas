@@ -2,7 +2,7 @@
 
 โปรเจกต์ `awesome-atlas` แยก `awesome-web` ออกจาก `awesome-api`
 ทั้งสอง service อยู่ใน environment `production` และ region สิงคโปร์
-source ที่เตรียมคือ `bookchaowalit/awesome-atlas`, branch `main`; build context เป็น
+source ที่เตรียมคือ `bookchaowalit/devtools-awesome-atlas`, branch `main`; build context เป็น
 repository root โดย Dockerfile-specific allowlists ไม่รวมไฟล์ส่วนอื่น
 resource IDs และผลตรวจอยู่ใน [railway-state.json](railway-state.json)
 

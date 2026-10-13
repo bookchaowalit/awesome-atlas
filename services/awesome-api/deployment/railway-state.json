@@ -5,7 +5,7 @@
   "project": {"name": "awesome-atlas", "id": "47722b43-7984-4876-801c-8683b55d02ea"},
   "environment": {"name": "production", "id": "307a7c33-d848-42a7-8eaa-2fe041d397a2"},
   "region": "asia-southeast1-eqsg3a",
-  "source": {"repo": "bookchaowalit/awesome-atlas", "branch": "main", "connected": true, "deployed_commit": "34d71d036d878885e3496f1dfedab007223f0223"},
+  "source": {"repo": "bookchaowalit/devtools-awesome-atlas", "branch": "main", "connected": true, "deployed_commit": "34d71d036d878885e3496f1dfedab007223f0223"},
   "services": {
     "awesome-api": {
       "id": "b6a7e7c0-d82e-47a2-ad7e-4973fec7e545",
@@ -49,7 +49,7 @@
     "github_account_link": {"status": "confirmed", "login": "bookchaowalit", "github_user_id": 57591548, "railway_provider_id": "github-57591548"},
     "railway_connector_identity": "matches_cli_account",
     "repository_created_and_pushed": "passed",
-    "verification_repository": "bookchaowalit/awesome-atlas",
+    "verification_repository": "bookchaowalit/devtools-awesome-atlas",
     "backend_tests": {"status": "passed", "count": 57},
     "frontend_tests": {"status": "passed", "count": 8},
     "frontend_build": "passed",

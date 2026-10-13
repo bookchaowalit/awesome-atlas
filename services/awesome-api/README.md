@@ -130,7 +130,7 @@ API เปิดเฉพาะเครือข่ายภายใน เว
 API มี persistent volume ที่ `/data`, หนึ่ง process/หนึ่ง replica,
 health check `/health`, restart เมื่อ failure และปิด app sleeping
 เมื่อ deployment ผ่าน health check จะทำงานและซิงก์ข้อมูลได้แม้ปิดเครื่องพัฒนา
-source คือ repo `bookchaowalit/awesome-atlas` ที่มีเฉพาะเว็บและ backend
+source คือ repo `bookchaowalit/devtools-awesome-atlas` ที่มีเฉพาะเว็บและ backend
 เว็บและ API deploy สำเร็จแล้ว: [Awesome Atlas](https://awesome-web-production.up.railway.app)
 ตรวจ HTTPS, API, หมวดย่อย, เปรียบเทียบรายการซ้ำและข้อมูลอันดับรายวันผ่านแล้ว
 ข้อมูลยังทยอยซิงก์และบางลิสต์ไม่มี repository links ที่ parser รองรับ;
