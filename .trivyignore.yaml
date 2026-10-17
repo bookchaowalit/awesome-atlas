@@ -1,0 +1,11 @@
+# Accepted Trivy findings. Each entry needs a statement; review them when the file changes.
+misconfigurations:
+  - id: DS-0002
+    paths:
+      - services/awesome-api/Dockerfile
+    statement: >-
+      The image starts as root only so docker-entrypoint.py can chown the Railway volume
+      mounted at /data (Railway mounts fresh volumes root-owned); it then drops to the
+      unprivileged `app` user (setgroups/setgid/setuid) before exec'ing Uvicorn.
+      Accepted 2026-10-17 by the owner's DevSecOps Phase 1 rollout; revisit if Railway
+      supports volume ownership settings.

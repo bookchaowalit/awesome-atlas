@@ -9,23 +9,38 @@ export function readSaved(raw: string | null): string[] {
   try {
     const value: unknown = JSON.parse(raw);
     if (!Array.isArray(value)) return [];
-    return [...new Set(value.filter((id): id is string => typeof id === 'string' && REPO_ID.test(id)).map(id => id.toLowerCase()))].slice(0, 200);
-  } catch { return []; }
+    return [
+      ...new Set(
+        value.filter((id): id is string => typeof id === 'string' && REPO_ID.test(id)).map((id) => id.toLowerCase()),
+      ),
+    ].slice(0, 200);
+  } catch {
+    return [];
+  }
 }
 
 export function toggleSaved(current: string[], id: string): string[] {
-  if (current.includes(id)) return current.filter(value => value !== id);
+  if (current.includes(id)) return current.filter((value) => value !== id);
   return current.length >= 200 ? current : [...current, id];
 }
 
 export function projectQuery(filters: {
-  q: string; category: string; source?: string; kind: 'project' | 'list' | 'all';
-  sort: 'recent' | 'name' | 'mentions'; page: number; saved?: string[];
-  section?: string; minSources?: number;
+  q: string;
+  category: string;
+  source?: string;
+  kind: 'project' | 'list' | 'all';
+  sort: 'recent' | 'name' | 'mentions';
+  page: number;
+  saved?: string[];
+  section?: string;
+  minSources?: number;
 }): string {
   const params = new URLSearchParams({
-    q: filters.q, kind: filters.saved ? 'all' : filters.kind, sort: filters.sort,
-    limit: String(PAGE_SIZE), offset: String(Math.max(0, filters.page) * PAGE_SIZE),
+    q: filters.q,
+    kind: filters.saved ? 'all' : filters.kind,
+    sort: filters.sort,
+    limit: String(PAGE_SIZE),
+    offset: String(Math.max(0, filters.page) * PAGE_SIZE),
   });
   if (filters.category) params.set('category', filters.category);
   if (filters.source) params.set('source', filters.source);
@@ -36,13 +51,27 @@ export function projectQuery(filters: {
 }
 export type View = 'explore' | 'lists' | 'list' | 'saved' | 'sources' | 'compare' | 'rankings';
 export interface Navigation {
-  view: View; source: string; section: string; left: string; right: string;
-  mode: CompareMode; ranking: 'mentions' | 'daily'; date: string; minSources: number;
+  view: View;
+  source: string;
+  section: string;
+  left: string;
+  right: string;
+  mode: CompareMode;
+  ranking: 'mentions' | 'daily';
+  date: string;
+  minSources: number;
 }
 export const DAILY_SOURCE = 'antonkomarev/github-trending-archive';
 export const DEFAULT_NAVIGATION: Navigation = {
-  view: 'explore', source: '', section: '', left: '', right: '', mode: 'shared',
-  ranking: 'mentions', date: '', minSources: 2,
+  view: 'explore',
+  source: '',
+  section: '',
+  left: '',
+  right: '',
+  mode: 'shared',
+  ranking: 'mentions',
+  date: '',
+  minSources: 2,
 };
 export function readNavigation(search: string): Navigation {
   const params = new URLSearchParams(search);
@@ -55,10 +84,14 @@ export function readNavigation(search: string): Navigation {
   const minimum = Number(params.get('min_sources') || 2);
   return {
     ...DEFAULT_NAVIGATION,
-    view: ['explore', 'lists', 'list', 'saved', 'sources', 'compare', 'rankings'].includes(view || '') ? view as View : 'explore',
-    source: repo('source'), left: repo('left'), right: repo('right'),
+    view: ['explore', 'lists', 'list', 'saved', 'sources', 'compare', 'rankings'].includes(view || '')
+      ? (view as View)
+      : 'explore',
+    source: repo('source'),
+    left: repo('left'),
+    right: repo('right'),
     section: (params.get('section') || '').slice(0, 256),
-    mode: ['shared', 'left_only', 'right_only', 'all'].includes(mode || '') ? mode as CompareMode : 'shared',
+    mode: ['shared', 'left_only', 'right_only', 'all'].includes(mode || '') ? (mode as CompareMode) : 'shared',
     ranking: params.get('ranking') === 'daily' ? 'daily' : 'mentions',
     date: /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') || '') ? params.get('date')! : '',
     minSources: Number.isInteger(minimum) && minimum >= 1 && minimum <= 1000 ? minimum : 2,

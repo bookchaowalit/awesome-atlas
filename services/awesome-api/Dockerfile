@@ -8,4 +8,7 @@ COPY services/awesome-api/docker-entrypoint.py ./docker-entrypoint.py
 RUN mkdir -p /data /app/.runtime && chown app:app /data /app/.runtime
 EXPOSE 3510
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 CMD ["python", "-c", "import os, urllib.request; port=os.environ.get('PORT') or '3510'; urllib.request.urlopen('http://127.0.0.1:'+port+'/health', timeout=3)"]
+# Starts as root only to chown the Railway volume at /data; docker-entrypoint.py then drops to the
+# unprivileged app user (see .trivyignore.yaml).
+# nosemgrep: dockerfile.security.missing-user-entrypoint.missing-user-entrypoint
 ENTRYPOINT ["python", "/app/docker-entrypoint.py"]

@@ -1,17 +1,17 @@
 """Bounded public README fetches and a fair, non-overlapping in-process scheduler."""
 
 import asyncio
-from datetime import datetime, timedelta, timezone
 import threading
+from datetime import UTC, datetime, timedelta
 from urllib.error import HTTPError
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .config import Config
+from .daily import DAILY_SOURCE, parse_daily, validate_date
 from .lake import Lake, utc_now
 from .parser import ROOT_ID, canonical_repository, parse_catalog, parse_projects
 from .store import Store
-from .daily import DAILY_SOURCE, parse_daily, validate_date
 
 
 class SafeRedirect(HTTPRedirectHandler):
@@ -28,8 +28,13 @@ def fetch_readme(source_id: str, config: Config) -> bytes:
     branch = "main" if source_id == ROOT_ID else "HEAD"
     opener = build_opener(SafeRedirect())
     for filename in ("readme.md", "README.md"):
-        request = Request(f"https://raw.githubusercontent.com/{source_id}/{branch}/{filename}",
-                          headers={"User-Agent": "AwesomeExplore/0.1 public-readme", "Accept": "text/plain"})
+        request = Request(
+            f"https://raw.githubusercontent.com/{source_id}/{branch}/{filename}",
+            headers={
+                "User-Agent": "AwesomeExplore/0.1 public-readme",
+                "Accept": "text/plain",
+            },
+        )
         try:
             with opener.open(request, timeout=config.fetch_timeout_seconds) as response:
                 content_length = response.headers.get("Content-Length")
@@ -52,11 +57,21 @@ def fetch_daily(source_id: str, requested_date: str, config: Config) -> bytes | 
     if source_id != DAILY_SOURCE["id"]:
         raise ValueError("daily source ไม่อยู่ใน allowlist")
     validate_date(requested_date)
-    url = (f"https://raw.githubusercontent.com/{source_id}/HEAD/archive/repository/"
-           f"{requested_date[:4]}/{requested_date}/(null).json")
-    request = Request(url, headers={"User-Agent": "AwesomeExplore/0.1 public-daily", "Accept": "application/json"})
+    url = (
+        f"https://raw.githubusercontent.com/{source_id}/HEAD/archive/repository/"
+        f"{requested_date[:4]}/{requested_date}/(null).json"
+    )
+    request = Request(
+        url,
+        headers={
+            "User-Agent": "AwesomeExplore/0.1 public-daily",
+            "Accept": "application/json",
+        },
+    )
     try:
-        with build_opener(SafeRedirect()).open(request, timeout=config.fetch_timeout_seconds) as response:
+        with build_opener(SafeRedirect()).open(
+            request, timeout=config.fetch_timeout_seconds
+        ) as response:
             declared = response.headers.get("Content-Length")
             if declared and int(declared) > config.max_readme_bytes:
                 raise ValueError("daily payload ใหญ่เกิน 4 MiB")
@@ -73,11 +88,17 @@ def fetch_daily(source_id: str, requested_date: str, config: Config) -> bytes | 
 
 
 class Coordinator:
-    def __init__(self, config: Config, store: Store, lake: Lake, fetch=None, daily_fetch=None):
+    def __init__(
+        self, config: Config, store: Store, lake: Lake, fetch=None, daily_fetch=None
+    ):
         self.config, self.store, self.lake = config, store, lake
         self.fetch = fetch or (lambda source_id: fetch_readme(source_id, config))
-        self.daily_fetch = daily_fetch or (lambda source_id, requested_date: fetch_daily(source_id, requested_date, config))
-        self.today = lambda: datetime.now(timezone.utc).date()
+        self.daily_fetch = daily_fetch or (
+            lambda source_id, requested_date: fetch_daily(
+                source_id, requested_date, config
+            )
+        )
+        self.today = lambda: datetime.now(UTC).date()
         self.lock = threading.Lock()
         self.next_sync_at = utc_now() if config.sync_enabled else None
 
@@ -97,14 +118,29 @@ class Coordinator:
                 if not records:
                     raise ValueError("ไม่พบ repository lists ใน root README")
             else:
-                records, names, role = parse_projects(text, source_id, source["categories"]), {}, "list"
+                records, names, role = (
+                    parse_projects(text, source_id, source["categories"]),
+                    {},
+                    "list",
+                )
                 if not records:
-                    raise ValueError("ไม่พบ GitHub repository links ที่รองรับใน list README; รองรับ Markdown bullets/reference links")
-            public_source = {key: source[key] for key in ("id", "name", "owner", "url", "category", "categories")}
-            manifest = self.lake.commit(source=public_source, raw=raw, records=records, role=role, category_names=names)
+                    raise ValueError(
+                        "ไม่พบ GitHub repository links ที่รองรับใน list README; รองรับ Markdown bullets/reference links"
+                    )
+            public_source = {
+                key: source[key]
+                for key in ("id", "name", "owner", "url", "category", "categories")
+            }
+            manifest = self.lake.commit(
+                source=public_source,
+                raw=raw,
+                records=records,
+                role=role,
+                category_names=names,
+            )
             self.store.replace_capture(self.lake, manifest)
             return True
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - record the failure and keep syncing other sources
             self.store.failed(source_id, str(error) or type(error).__name__)
             return False
 
@@ -116,12 +152,19 @@ class Coordinator:
             if not raw or len(raw) > self.config.max_readme_bytes:
                 raise ValueError("daily payload ว่างหรือเกินขนาดที่อนุญาต")
             records = parse_daily(raw, requested_date)
-            manifest = self.lake.commit(source=DAILY_SOURCE, raw=raw, records=records,
-                                        role="daily", snapshot_date=requested_date)
+            manifest = self.lake.commit(
+                source=DAILY_SOURCE,
+                raw=raw,
+                records=records,
+                role="daily",
+                snapshot_date=requested_date,
+            )
             self.store.replace_capture(self.lake, manifest)
             return True
-        except Exception as error:
-            self.store.daily_error(f"{requested_date}: {str(error) or type(error).__name__}")
+        except Exception as error:  # noqa: BLE001 - record the failure and keep syncing other sources
+            self.store.daily_error(
+                f"{requested_date}: {str(error) or type(error).__name__}"
+            )
             return False
 
     def _sync_daily(self, stop=None):
@@ -158,28 +201,40 @@ class Coordinator:
             return success
         finally:
             if self.config.sync_enabled:
-                self.next_sync_at = (datetime.now(timezone.utc) + timedelta(seconds=self.config.sync_interval_seconds)).isoformat()
+                self.next_sync_at = (
+                    datetime.now(UTC)
+                    + timedelta(seconds=self.config.sync_interval_seconds)
+                ).isoformat()
             self.lock.release()
 
     async def run(self, stop: asyncio.Event):
         while not stop.is_set():
             await asyncio.to_thread(self.sync, stop)
             try:
-                await asyncio.wait_for(stop.wait(), timeout=self.config.sync_interval_seconds)
-            except asyncio.TimeoutError:
+                await asyncio.wait_for(
+                    stop.wait(), timeout=self.config.sync_interval_seconds
+                )
+            except TimeoutError:
                 pass
 
     def status(self):
         sources = self.store.sources()
         errors = self.store.errors()
         return {
-            "state": "syncing" if self.lock.locked() else "degraded" if errors else "idle",
+            "state": "syncing"
+            if self.lock.locked()
+            else "degraded"
+            if errors
+            else "idle",
             "last_synced_at": self.store.metadata("last_synced_at"),
             "next_sync_at": self.next_sync_at,
             "sync_interval_seconds": self.config.sync_interval_seconds,
             "project_count": self.store.projects(limit=1)["total"],
             "list_count": self.store.projects(kind="list", limit=1)["total"],
             "category_count": len(self.store.categories()),
-            "sources_synced": sum(source["last_synced_at"] is not None for source in sources),
-            "sources_total": len(sources), "last_error": "; ".join(errors)[:1000] or None,
+            "sources_synced": sum(
+                source["last_synced_at"] is not None for source in sources
+            ),
+            "sources_total": len(sources),
+            "last_error": "; ".join(errors)[:1000] or None,
         }
