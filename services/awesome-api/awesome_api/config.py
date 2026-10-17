@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -21,9 +21,16 @@ class Config:
             return value
 
         return cls(
-            runtime_dir=Path(os.environ.get("AWESOME_API_RUNTIME_DIR", cls.runtime_dir)),
-            sync_enabled=os.environ.get("AWESOME_API_SYNC_ENABLED", "true").lower() == "true",
-            sync_interval_seconds=integer("AWESOME_API_SYNC_INTERVAL_SECONDS", 1800, 60, 86400),
+            runtime_dir=Path(
+                os.environ.get("AWESOME_API_RUNTIME_DIR", cls.runtime_dir)
+            ),
+            sync_enabled=os.environ.get("AWESOME_API_SYNC_ENABLED", "true").lower()
+            == "true",
+            sync_interval_seconds=integer(
+                "AWESOME_API_SYNC_INTERVAL_SECONDS", 1800, 60, 86400
+            ),
             max_sources=integer("AWESOME_API_MAX_SOURCES", 16, 1, 100),
-            fetch_timeout_seconds=integer("AWESOME_API_FETCH_TIMEOUT_SECONDS", 12, 1, 60),
+            fetch_timeout_seconds=integer(
+                "AWESOME_API_FETCH_TIMEOUT_SECONDS", 12, 1, 60
+            ),
         )

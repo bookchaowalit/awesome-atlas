@@ -1,6 +1,6 @@
 import argparse
-from dataclasses import replace
 import json
+from dataclasses import replace
 
 import uvicorn
 
@@ -12,8 +12,15 @@ from .sync import Coordinator
 
 def main():
     parser = argparse.ArgumentParser(description="Awesome Explore backend")
-    parser.add_argument("command", choices=["serve", "sync", "status", "rebuild"], nargs="?", default="serve")
-    parser.add_argument("--once", action="store_true", help="ดึงข้อมูลหนึ่งรอบแล้วจบ (เท่ากับ sync)")
+    parser.add_argument(
+        "command",
+        choices=["serve", "sync", "status", "rebuild"],
+        nargs="?",
+        default="serve",
+    )
+    parser.add_argument(
+        "--once", action="store_true", help="ดึงข้อมูลหนึ่งรอบแล้วจบ (เท่ากับ sync)"
+    )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=3510)
     args = parser.parse_args()
@@ -22,7 +29,10 @@ def main():
         uvicorn.run("awesome_api.app:app", host=args.host, port=args.port, workers=1)
         return
     config = replace(Config.from_env(), sync_enabled=False)
-    store, lake = Store(config.runtime_dir / "catalog.sqlite3"), Lake(config.runtime_dir / "lake")
+    store, lake = (
+        Store(config.runtime_dir / "catalog.sqlite3"),
+        Lake(config.runtime_dir / "lake"),
+    )
     worker = Coordinator(config, store, lake)
     if command == "sync":
         ok = worker.sync()
@@ -30,7 +40,12 @@ def main():
         if not ok:
             raise SystemExit(1)
     elif command == "rebuild":
-        print(json.dumps({"captures_replayed": store.rebuild(lake), "status": worker.status()}, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"captures_replayed": store.rebuild(lake), "status": worker.status()},
+                ensure_ascii=False,
+            )
+        )
     else:
         print(json.dumps(worker.status(), ensure_ascii=False))
 

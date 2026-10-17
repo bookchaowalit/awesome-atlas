@@ -1,15 +1,16 @@
 """A bounded Markdown extractor; only canonical GitHub repository links survive."""
 
-from dataclasses import dataclass
 import re
 import unicodedata
+from dataclasses import dataclass
 from urllib.parse import urlsplit
-
 
 ROOT_ID = "sindresorhus/awesome"
 OWNER = re.compile(r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?\Z")
 REPO = re.compile(r"[a-zA-Z0-9_.-]{1,100}\Z")
-LINK = re.compile(r"(?<!!)\[([^\]\n]+)\](?:\(\s*(<?https?://[^\s)]+>?)\s*(?:[\"'][^\"']*[\"'])?\s*\)|\[([^\]\n]*)\])")
+LINK = re.compile(
+    r"(?<!!)\[([^\]\n]+)\](?:\(\s*(<?https?://[^\s)]+>?)\s*(?:[\"'][^\"']*[\"'])?\s*\)|\[([^\]\n]*)\])"
+)
 REFERENCE = re.compile(r"^\s{0,3}\[([^\]]+)\]:\s*<?(https?://[^\s>]+)>?")
 BULLET = re.compile(r"^\s*(?:[-*+] |\d+[.)] )")
 
@@ -27,9 +28,21 @@ def canonical_repository(url: str) -> str | None:
         owner, repo = path
         if repo.lower().endswith(".git"):
             repo = repo[:-4]
-        if not OWNER.fullmatch(owner) or not REPO.fullmatch(repo) or repo in {".", ".."}:
+        if (
+            not OWNER.fullmatch(owner)
+            or not REPO.fullmatch(repo)
+            or repo in {".", ".."}
+        ):
             return None
-        if owner.lower() in {"topics", "collections", "settings", "marketplace", "sponsors", "orgs", "users"}:
+        if owner.lower() in {
+            "topics",
+            "collections",
+            "settings",
+            "marketplace",
+            "sponsors",
+            "orgs",
+            "users",
+        }:
             return None
         return f"{owner}/{repo}".lower()
     except ValueError:
@@ -37,7 +50,9 @@ def canonical_repository(url: str) -> str | None:
 
 
 def slug(text: str) -> str:
-    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    text = (
+        unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    )
     return re.sub(r"[^a-z0-9]+", "-", text).strip("-") or "other"
 
 
@@ -54,7 +69,9 @@ def _lines(markdown: str):
     for line in markdown.splitlines():
         if re.match(r"^\s{0,3}(`{3,}|~{3,})", line):
             in_fence = not in_fence
-            visible.append("")  # Removed examples must not join surrounding Setext lines.
+            visible.append(
+                ""
+            )  # Removed examples must not join surrounding Setext lines.
             continue
         if in_fence:
             continue
@@ -75,12 +92,20 @@ def _setext_headings(lines):
     index = 0
     while index < len(lines):
         line = lines[index]
-        marker = underline.fullmatch(lines[index + 1]) if index + 1 < len(lines) else None
+        marker = (
+            underline.fullmatch(lines[index + 1]) if index + 1 < len(lines) else None
+        )
         title = line.strip()
-        plain_title = (re.match(r" {0,3}\S", line) and not line.startswith("\t")
-                       and title and not title.startswith(("#", ">", "<"))
-                       and "|" not in line and not BULLET.match(line)
-                       and not rule.fullmatch(line) and not underline.fullmatch(line))
+        plain_title = (
+            re.match(r" {0,3}\S", line)
+            and not line.startswith("\t")
+            and title
+            and not title.startswith(("#", ">", "<"))
+            and "|" not in line
+            and not BULLET.match(line)
+            and not rule.fullmatch(line)
+            and not underline.fullmatch(line)
+        )
         if marker and plain_title:
             level = "#" if marker.group(1).startswith("=") else "##"
             normalized.append(f"{level} {title}")
@@ -100,14 +125,25 @@ def _extract(markdown: str, *, source_id: str, categories: list[str], catalog: b
     current_categories = categories
     current_sections = []
     for line in lines:
-        heading_pattern = r"^\s{0,3}#{2,6}\s+(.+?)\s*#*\s*$" if catalog else r"^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$"
+        heading_pattern = (
+            r"^\s{0,3}#{2,6}\s+(.+?)\s*#*\s*$"
+            if catalog
+            else r"^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$"
+        )
         heading = re.match(heading_pattern, line)
         if heading:
             name = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", heading.group(1)).strip()
-            name = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", name)).strip()[:256].strip()
+            name = (
+                re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", name)).strip()[:256].strip()
+            )
             current_sections = [name] if name else []
             if catalog:
-                if not name or name.lower() in {"contents", "table of contents", "related", "contributing"}:
+                if not name or name.lower() in {
+                    "contents",
+                    "table of contents",
+                    "related",
+                    "contributing",
+                }:
                     current_categories = []
                 else:
                     category_id = slug(name)
@@ -130,21 +166,35 @@ def _extract(markdown: str, *, source_id: str, categories: list[str], catalog: b
             if name.startswith("!"):
                 continue
             owner, repo = repo_id.split("/")
-            description = re.sub(r"^\s*[-–—:]\s*", "", line[match.end():].strip())
+            description = re.sub(r"^\s*[-–—:]\s*", "", line[match.end() :].strip())
             description = re.sub(r"<br\s*/?>", " ", description, flags=re.IGNORECASE)
-            description = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", description)).strip()
-            kind = "list" if catalog or re.search(r"(?:^|[-_.])awesome(?:$|[-_.])", repo) else "project"
+            description = re.sub(
+                r"\s+", " ", re.sub(r"<[^>]+>", "", description)
+            ).strip()
+            kind = (
+                "list"
+                if catalog or re.search(r"(?:^|[-_.])awesome(?:$|[-_.])", repo)
+                else "project"
+            )
             if repo_id in records:
                 record = records[repo_id]
-                record["categories"] = list(dict.fromkeys(record["categories"] + current_categories))
-                record["sections"] = list(dict.fromkeys(record["sections"] + current_sections))
+                record["categories"] = list(
+                    dict.fromkeys(record["categories"] + current_categories)
+                )
+                record["sections"] = list(
+                    dict.fromkeys(record["sections"] + current_sections)
+                )
                 if not record["description"] and description:
                     record["description"] = description[:2000]
                 continue
             records[repo_id] = {
-                "id": repo_id, "name": name.strip()[:200], "owner": owner,
-                "description": description[:2000], "url": f"https://github.com/{repo_id}",
-                "kind": kind, "categories": list(current_categories or ["other"]),
+                "id": repo_id,
+                "name": name.strip()[:200],
+                "owner": owner,
+                "description": description[:2000],
+                "url": f"https://github.com/{repo_id}",
+                "kind": kind,
+                "categories": list(current_categories or ["other"]),
                 "sections": list(current_sections),
             }
     return Catalog(list(records.values()), category_names)
@@ -155,4 +205,6 @@ def parse_catalog(markdown: str) -> Catalog:
 
 
 def parse_projects(markdown: str, source_id: str, categories: list[str]) -> list[dict]:
-    return _extract(markdown, source_id=source_id, categories=categories, catalog=False).records
+    return _extract(
+        markdown, source_id=source_id, categories=categories, catalog=False
+    ).records

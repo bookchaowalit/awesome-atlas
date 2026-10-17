@@ -7,7 +7,6 @@ from awesome_api.lake import Lake
 from awesome_api.store import Store
 from awesome_api.sync import Coordinator
 
-
 ROOT = "sindresorhus/awesome"
 CATALOG = b"""# Awesome
 ## Developer Tools
@@ -28,10 +27,20 @@ DATABASES = b"""# Databases
 @pytest.fixture
 def runtime(tmp_path):
     config = Config(runtime_dir=tmp_path, sync_enabled=False, max_sources=16)
-    payloads = {ROOT: CATALOG, "org/awesome-tools": TOOLS, "org/awesome-databases": DATABASES}
+    payloads = {
+        ROOT: CATALOG,
+        "org/awesome-tools": TOOLS,
+        "org/awesome-databases": DATABASES,
+    }
     store = Store(tmp_path / "catalog.sqlite3")
     lake = Lake(tmp_path / "lake")
-    worker = Coordinator(config, store, lake, fetch=lambda source: payloads[source], daily_fetch=lambda source, day: None)
+    worker = Coordinator(
+        config,
+        store,
+        lake,
+        fetch=lambda source: payloads[source],
+        daily_fetch=lambda source, day: None,
+    )
     return config, store, lake, worker, payloads
 
 
@@ -51,23 +60,61 @@ def test_sync_archives_before_projection_and_deduplicates_memberships(runtime):
 def test_api_filter_pagination_sort_ids_and_read_only(runtime):
     config, store, lake, worker, _ = runtime
     worker.sync()
-    with TestClient(create_app(config, store=store, lake=lake, coordinator=worker)) as client:
+    with TestClient(
+        create_app(config, store=store, lake=lake, coordinator=worker)
+    ) as client:
         assert client.get("/health").status_code == 200
-        assert client.get("/api/v1/projects", params={"q": "database"}).json()["total"] == 1
-        assert client.get("/api/v1/projects", params={"category": "databases"}).json()["total"] == 2
-        assert client.get("/api/v1/projects", params={"source": "org/awesome-tools"}).json()["total"] == 2
-        page = client.get("/api/v1/projects", params={"sort": "name", "limit": 1, "offset": 1}).json()
+        assert (
+            client.get("/api/v1/projects", params={"q": "database"}).json()["total"]
+            == 1
+        )
+        assert (
+            client.get("/api/v1/projects", params={"category": "databases"}).json()[
+                "total"
+            ]
+            == 2
+        )
+        assert (
+            client.get(
+                "/api/v1/projects", params={"source": "org/awesome-tools"}
+            ).json()["total"]
+            == 2
+        )
+        page = client.get(
+            "/api/v1/projects", params={"sort": "name", "limit": 1, "offset": 1}
+        ).json()
         assert page["total"] == 3 and page["items"][0]["id"] == "b/beta"
         assert page["limit"] == 1 and page["offset"] == 1
-        assert client.get("/api/v1/projects", params={"ids": "A/ALPHA,c/gamma"}).json()["total"] == 2
-        assert client.get("/api/v1/projects", params={"kind": "all"}).json()["total"] == 5
+        assert (
+            client.get("/api/v1/projects", params={"ids": "A/ALPHA,c/gamma"}).json()[
+                "total"
+            ]
+            == 2
+        )
+        assert (
+            client.get("/api/v1/projects", params={"kind": "all"}).json()["total"] == 5
+        )
         categories = client.get("/api/v1/categories").json()["items"]
-        assert {c["id"]: c["count"] for c in categories} == {"databases": 2, "developer-tools": 2}
+        assert {c["id"]: c["count"] for c in categories} == {
+            "databases": 2,
+            "developer-tools": 2,
+        }
         assert len(client.get("/api/v1/sources").json()["items"]) == 2
         assert client.get("/api/v1/status").json()["state"] == "idle"
-        for params in [{"limit": 101}, {"offset": -1}, {"kind": "bad"}, {"sort": "bad"}]:
+        for params in [
+            {"limit": 101},
+            {"offset": -1},
+            {"kind": "bad"},
+            {"sort": "bad"},
+        ]:
             assert client.get("/api/v1/projects", params=params).status_code == 422
-        assert client.get("/api/v1/projects", params={"ids": ",".join(f"a/r{i}" for i in range(201))}).status_code == 400
+        assert (
+            client.get(
+                "/api/v1/projects",
+                params={"ids": ",".join(f"a/r{i}" for i in range(201))},
+            ).status_code
+            == 400
+        )
         assert client.post("/api/v1/projects").status_code == 405
 
 
@@ -83,7 +130,11 @@ def test_lake_failure_is_closed_before_sqlite(runtime, monkeypatch):
     _, store, lake, worker, _ = runtime
     worker.sync()
     before = store.projects(kind="all")
-    monkeypatch.setattr(lake, "commit", lambda **kwargs: (_ for _ in ()).throw(OSError("lake unavailable")))
+    monkeypatch.setattr(
+        lake,
+        "commit",
+        lambda **kwargs: (_ for _ in ()).throw(OSError("lake unavailable")),
+    )
     assert worker.sync() is False
     assert store.projects(kind="all") == before
     assert worker.status()["state"] == "degraded"
@@ -107,7 +158,9 @@ def test_manifest_write_failure_preserves_previous_projection(runtime, monkeypat
     assert store.projects(kind="all") == before
 
 
-def test_partial_failure_retains_projects_and_success_removes_only_own_membership(runtime):
+def test_partial_failure_retains_projects_and_success_removes_only_own_membership(
+    runtime,
+):
     _, store, _, worker, payloads = runtime
     worker.sync()
     payloads["org/awesome-tools"] = b"- [Beta](https://github.com/b/beta) - Updated."
@@ -123,13 +176,20 @@ def test_partial_failure_retains_projects_and_success_removes_only_own_membershi
     assert alpha["source_ids"] == ["org/awesome-databases"]
     assert store.projects()["total"] == 3
     assert worker.status()["state"] == "degraded"
-    assert next(s for s in store.sources() if s["id"] == "org/awesome-databases")["error"] == "source timeout"
+    assert (
+        next(s for s in store.sources() if s["id"] == "org/awesome-databases")["error"]
+        == "source timeout"
+    )
 
 
 def test_root_failure_does_not_prune_known_sources(runtime):
     _, store, _, worker, payloads = runtime
     worker.sync()
-    worker.fetch = lambda source: (_ for _ in ()).throw(TimeoutError("root unavailable")) if source == ROOT else payloads[source]
+    worker.fetch = lambda source: (
+        (_ for _ in ()).throw(TimeoutError("root unavailable"))
+        if source == ROOT
+        else payloads[source]
+    )
     assert worker.sync() is False
     assert len(store.sources()) == 2 and store.projects()["total"] == 3
 
@@ -147,7 +207,9 @@ def test_rotation_is_fair_even_for_failing_sources(tmp_path):
             raise TimeoutError("unavailable")
         return DATABASES
 
-    worker = Coordinator(config, store, lake, fetch=fetch, daily_fetch=lambda source, day: None)
+    worker = Coordinator(
+        config, store, lake, fetch=fetch, daily_fetch=lambda source, day: None
+    )
     worker.sync()
     worker.sync()
     worker.sync()
@@ -165,11 +227,14 @@ def test_empty_or_malformed_capture_does_not_prune_previous_data(runtime):
     assert store.projects()["total"] == before
 
 
-@pytest.mark.parametrize("raw", [
-    b"Temporarily unavailable. Please try again later.",
-    b'<section><a href="https://github.com/new/project">Project</a></section>',
-    b"# Tools\n- [External website](https://example.test/tool)",
-])
+@pytest.mark.parametrize(
+    "raw",
+    [
+        b"Temporarily unavailable. Please try again later.",
+        b'<section><a href="https://github.com/new/project">Project</a></section>',
+        b"# Tools\n- [External website](https://example.test/tool)",
+    ],
+)
 def test_nonempty_unparsed_source_preserves_snapshot_and_reports_failure(runtime, raw):
     _, store, lake, worker, payloads = runtime
     worker.sync()
@@ -220,11 +285,15 @@ def test_corrupt_bronze_rebuild_fails_before_any_projection_write(runtime):
 def test_root_success_prunes_removed_sources_only_after_committed_capture(runtime):
     _, store, _, worker, payloads = runtime
     worker.sync()
-    payloads[ROOT] = b"## Developer Tools\n- [Tools](https://github.com/org/awesome-tools)"
+    payloads[ROOT] = (
+        b"## Developer Tools\n- [Tools](https://github.com/org/awesome-tools)"
+    )
     assert worker.sync() is True
     assert len(store.sources()) == 1
     assert store.projects()["total"] == 2
-    assert store.projects(ids=["a/alpha"])["items"][0]["categories"] == ["developer-tools"]
+    assert store.projects(ids=["a/alpha"])["items"][0]["categories"] == [
+        "developer-tools"
+    ]
 
 
 def test_replaying_same_committed_manifest_is_idempotent(runtime):
@@ -236,15 +305,20 @@ def test_replaying_same_committed_manifest_is_idempotent(runtime):
     assert store.projects(kind="all") == before
 
 
-def test_lake_objects_are_immutable_and_manifest_publication_is_atomic(tmp_path, monkeypatch):
+def test_lake_objects_are_immutable_and_manifest_publication_is_atomic(
+    tmp_path, monkeypatch
+):
     import os
+
     lake = Lake(tmp_path)
     path = tmp_path / "manifests" / "one.json"
     lake._write(path, b"complete")
     with pytest.raises(FileExistsError):
         lake._write(path, b"replacement")
     assert path.read_bytes() == b"complete"
-    monkeypatch.setattr(os, "link", lambda *args: (_ for _ in ()).throw(OSError("publish failed")))
+    monkeypatch.setattr(
+        os, "link", lambda *args: (_ for _ in ()).throw(OSError("publish failed"))
+    )
     with pytest.raises(OSError):
         lake._write(tmp_path / "manifests" / "two.json", b"incomplete")
     assert not (tmp_path / "manifests" / "two.json").exists()
