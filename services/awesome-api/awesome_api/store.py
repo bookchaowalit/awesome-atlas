@@ -280,6 +280,7 @@ class Store:
                 "metadata",
                 "applied_captures",
             ):
+                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- table comes from the constant tuple above
                 db.execute(f"DELETE FROM {table}")
             self._source(db, ROOT_SOURCE)
             self._daily_source(db, DAILY_SOURCE)
@@ -443,9 +444,11 @@ class Store:
             else "p.updated_at DESC,p.id"
         )
         with self.connection() as db:
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- where/order are built only from constant fragments; values are ? parameters
             total = db.execute(
                 f"SELECT count(*) FROM projects p WHERE {where}", params
             ).fetchone()[0]
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- where/order are built only from constant fragments; values are ? parameters
             rows = db.execute(
                 f"SELECT p.* FROM projects p WHERE {where} ORDER BY {order} LIMIT ? OFFSET ?",
                 [*params, limit, offset],
@@ -516,6 +519,7 @@ class Store:
                 placeholders = ",".join("?" for _ in ids)
                 active = {
                     row[0]
+                    # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- placeholders is only '?' marks; ids are parameters
                     for row in db.execute(
                         """SELECT DISTINCT m.project_id FROM memberships m
                     JOIN sources s ON s.id=m.source_id AND s.active=1 WHERE m.project_id IN ("""
@@ -601,6 +605,7 @@ class Store:
             clauses.append("p.kind=?")
             parameters.append(kind)
         with self.connection() as db:
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- clauses are constant fragments; values are ? parameters
             rows = db.execute(
                 """SELECT m.project_id,count(DISTINCT m.source_id) AS mentions,
                 max(CASE WHEN m.source_id=? THEN 1 ELSE 0 END) AS in_left FROM memberships m
@@ -691,7 +696,9 @@ class Store:
                 WHERE de.source_id=? AND de.date=?"""
                 + search
             )
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- sql is constant text plus a constant search clause; values are ? parameters
             total = db.execute("SELECT count(*) " + sql, params).fetchone()[0]
+            # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query -- sql is constant text plus a constant search clause; values are ? parameters
             rows = db.execute(
                 "SELECT de.* " + sql + " ORDER BY de.rank,de.id LIMIT ? OFFSET ?",
                 [*params, limit, offset],
